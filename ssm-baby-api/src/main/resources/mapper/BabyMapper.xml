@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fh.mapper.BabyMapper">
+
+  <resultMap id="BaseResultMap" type="com.fh.model.Baby">
+    <id column="baby_id" jdbcType="INTEGER" property="babyId" />
+    <result column="baby_name" jdbcType="VARCHAR" property="babyName" />
+    <result column="baby_price" jdbcType="DECIMAL" property="babyPrice" />
+    <result column="baby_date" jdbcType="DATE" property="babyDate" />
+    <result column="baby_size" jdbcType="INTEGER" property="babySize" />
+    <result column="type_id" jdbcType="INTEGER" property="typeId" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
+  </resultMap>
+
+    <sql id="babyWhere">
+        where 1=1
+
+        <if test="babyName != null and babyName != ''">
+            and baby_name like concat('%',#{babyName},'%')
+        </if>
+
+        <if test="babySize != null">
+            and baby_size = #{babySize}
+        </if>
+
+        <if test="minPrice != null">
+            and baby_price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            and baby_price &lt;= #{maxPrice}
+        </if>
+
+        <if test="minDate != null and maxDate != null">
+            and baby_date between #{minDate} and #{maxDate}
+        </if>
+
+        <if test="typeId != null">
+            and b.type_id = #{typeId}
+        </if>
+
+    </sql>
+
+  <select id="queryBabyList" resultMap="BaseResultMap">
+    select b.*,t.type_name from t_baby b left join t_type t on b.type_id = t.type_id
+    <include refid="babyWhere"/> order by baby_id
+  </select>
+
+  <insert id="addBaby">
+      insert into t_baby (baby_name, baby_price, baby_date, baby_size, type_id)
+      values (#{babyName},#{babyPrice},#{babyDate},#{babySize},#{typeId})
+  </insert>
+
+  <delete id="deleteBaby">
+      delete from t_baby where baby_id = #{babyId}
+  </delete>
+
+  <delete id="deleteBatch">
+    delete from t_baby where 1=1 and baby_id in
+    <foreach collection="list" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <update id="updateBaby">
+        update t_baby set baby_name = #{babyName}, baby_price = #{babyPrice},
+        baby_date = #{babyDate}, baby_size = #{babySize}, type_id = #{typeId}
+        where baby_id = #{babyId}
+    </update>
+
+</mapper>
